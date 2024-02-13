@@ -15,7 +15,6 @@ main = Blueprint("main", __name__)
 @main.route('/')
 def homepage():
     all_stores = GroceryStore.query.all()
-    print(all_stores)
     return render_template('home.html', all_stores=all_stores)
 
 @main.route('/new_store', methods=['GET', 'POST'])
@@ -35,13 +34,8 @@ def new_store():
 
 @main.route('/new_item', methods=['GET', 'POST'])
 def new_item():
-    # TODO: Create a GroceryItemForm
     item_form = GroceryItemForm()
-
-    # TODO: If form was submitted and was valid:
-    # - create a new GroceryItem object and save it to the database,
-    # - flash a success message, and
-    # - redirect the user to the item detail page.
+    
     if item_form.validate_on_submit():
         new_item = GroceryItem(
             name=item_form.name.data,
@@ -55,23 +49,16 @@ def new_item():
         flash('New item was added successfully.')
         return redirect(url_for('main.item_detail', item_id=new_item.id))
 
-    # TODO: Send the form to the template and use it to render the form fields
     return render_template('new_item.html', form=item_form)
 
 @main.route('/store/<store_id>', methods=['GET', 'POST'])
 def store_detail(store_id):
     store = GroceryStore.query.get(store_id)
-    # TODO: Create a GroceryStoreForm and pass in `obj=store`
     
     if store is None:
         flash('Store not found.')
         return redirect(url_for('main.homepage'))
 
-    # TODO: If form was submitted and was valid:
-    # - update the GroceryStore object and save it to the database,
-    # - flash a success message, and
-    # - redirect the user to the store detail page.
-    
     form = GroceryStoreForm(obj=store)
     if form.validate_on_submit():
         store.title = form.title.data
@@ -80,7 +67,6 @@ def store_detail(store_id):
         flash('Store was updated successfully.')
         return redirect(url_for('main.store_detail', store_id=store.id))
 
-    # TODO: Send the form to the template and use it to render the form fields
     store = GroceryStore.query.get(store_id)
     return render_template('store_detail.html', store=store, form=form)
 
