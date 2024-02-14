@@ -16,6 +16,8 @@ from flask_login import logout_user
 from flask_login import login_required
 
 main = Blueprint("main", __name__)
+auth = Blueprint("auth", __name__)
+bcrypt = Bcrypt()
 
 ##########################################
 #           Routes                       #
@@ -105,11 +107,9 @@ def item_detail(item_id):
     return render_template('item_detail.html', item=item, form=form)
 
 
-auth = Blueprint("auth", __name__)
-bcrypt = Bcrypt()
-
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
+    print('in signup')
     form = SignUpForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -120,7 +120,9 @@ def signup():
         db.session.add(user)
         db.session.commit()
         flash('Account Created.')
+        print('created')
         return redirect(url_for('auth.login'))
+    print(form.errors)
     return render_template('signup.html', form=form)
 
 
@@ -135,6 +137,7 @@ def login():
     return render_template('login.html', form=form)
 
 @auth.route('/logout')
+@login_required
 def logout():
     logout_user()
     return redirect(url_for('main.homepage'))
