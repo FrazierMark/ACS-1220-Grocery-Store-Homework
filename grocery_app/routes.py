@@ -5,7 +5,6 @@ from grocery_app.forms import GroceryStoreForm, GroceryItemForm
 
 # Import app and db from events_app package so that we can run app
 from grocery_app.extensions import app, db
-from grocery_app.extensions import db
 from grocery_app.forms import SignUpForm
 from grocery_app.models import User
 from flask import Blueprint, render_template, redirect, url_for, flash
@@ -14,6 +13,7 @@ from grocery_app.forms import LoginForm
 from flask_login import login_user
 from flask_login import logout_user
 from flask_login import login_required
+from flask_login import current_user
 
 main = Blueprint("main", __name__)
 auth = Blueprint("auth", __name__)
@@ -106,10 +106,17 @@ def item_detail(item_id):
     
     return render_template('item_detail.html', item=item, form=form)
 
+@main.route('/add_to_shopping_list/<item_id>', methods=['POST'])
+def add_to_shopping_list(item_id):
+    item = GroceryItem.query.get(item_id)
+    current_user.shopping_list_users.append(item)
+    db.session.add(current_user)
+    db.session.commit()
+    flash('Item successfully added to your shopping list!')
+    return redirect(url_for('main.shopping_list', item_id=item_id))
 
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
-    print('in signup')
     form = SignUpForm()
     if form.validate_on_submit():
         hashed_password = bcrypt.generate_password_hash(form.password.data).decode('utf-8')
@@ -119,12 +126,10 @@ def signup():
         )
         db.session.add(user)
         db.session.commit()
-        flash('Account Created.')
-        print('created')
+        flash('Account Created')
         return redirect(url_for('auth.login'))
-    print(form.errors)
-    return render_template('signup.html', form=form)
 
+    return render_template('signup.html', form=form)
 
 @auth.route('/login', methods=['GET', 'POST'])
 def login():
@@ -134,6 +139,7 @@ def login():
         login_user(user, remember=True)
         next_page = request.args.get('next')
         return redirect(next_page if next_page else url_for('main.homepage'))
+
     return render_template('login.html', form=form)
 
 @auth.route('/logout')
