@@ -115,6 +115,12 @@ def add_to_shopping_list(item_id):
     flash('Item successfully added to your shopping list!')
     return redirect(url_for('main.shopping_list', item_id=item_id))
 
+@main.route('/shopping_list')
+@login_required
+def shopping_list():
+    shopping_list = current_user.shopping_list_users
+    return render_template("shopping_list.html", shopping_list=shopping_list)
+
 @auth.route('/signup', methods=['GET', 'POST'])
 def signup():
     form = SignUpForm()
